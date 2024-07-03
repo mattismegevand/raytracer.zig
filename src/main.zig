@@ -12,6 +12,7 @@ pub fn main() !void {
     var j: u16 = 0;
     while (j < image_height) : (j += 1) {
         var i: u16 = 0;
+        std.debug.print("Scanlines remaining: {}\n", .{image_height - j});
         while (i < image_width) : (i += 1) {
             const r: f64 = @as(f64, @floatFromInt(i)) / @as(f64, @floatFromInt(image_width - 1));
             const g: f64 = @as(f64, @floatFromInt(j)) / @as(f64, @floatFromInt(image_height - 1));
@@ -24,5 +25,7 @@ pub fn main() !void {
             try stdout.print("{} {} {}\n", .{ ir, ig, ib });
         }
     }
+    std.debug.print("Done.\n", .{});
+
     try bw.flush();
 }
