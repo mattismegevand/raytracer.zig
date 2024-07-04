@@ -25,10 +25,8 @@ pub const vec3 = struct {
         return u.add(v.neg());
     }
 
-    pub fn scale(self: vec3, t: f64) !void {
-        self.x *= t;
-        self.y *= t;
-        self.z *= t;
+    pub fn scale(self: vec3, t: f64) vec3 {
+        return vec3{ .x = self.x * t, .y = self.y * t, .z = self.z * t };
     }
 
     pub fn mul(self: vec3, v: vec3) vec3 {
@@ -56,7 +54,7 @@ pub const vec3 = struct {
     }
 
     pub fn unit_vector(v: vec3) vec3 {
-        return v.div(v.length());
+        return v.scale(1.0 / v.length());
     }
 };
 
