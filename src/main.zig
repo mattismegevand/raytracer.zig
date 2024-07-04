@@ -4,18 +4,24 @@ const ray = @import("ray.zig").ray;
 const vec3 = @import("vec3.zig").vec3;
 const point3 = @import("vec3.zig").point3;
 
-fn hit_sphere(center: point3, radius: f64, r: ray) bool {
+fn hit_sphere(center: point3, radius: f64, r: ray) f64 {
     const oc: vec3 = center.sub(r.origin);
     const a: f64 = r.direction.dot(r.direction);
     const b: f64 = -2.0 * r.direction.dot(oc);
     const c: f64 = oc.dot(oc) - radius * radius;
     const discriminant: f64 = b * b - 4 * a * c;
-    return (discriminant >= 0);
+    if (discriminant < 0) {
+        return -1.0;
+    } else {
+        return (-b - @sqrt(discriminant)) / (2.0 * a);
+    }
 }
 
 fn ray_color(r: ray) color.color {
-    if (hit_sphere(point3.init(0, 0, -1), 0.5, r)) {
-        return color.color.init(1, 0, 0);
+    const t: f64 = hit_sphere(point3.init(0, 0, -1), 0.5, r);
+    if (t > 0.0) {
+        const N: vec3 = r.at(t).sub(vec3.init(0, 0, -1)).unit_vector();
+        return color.color.init(N.x + 1, N.y + 1, N.z + 1).scale(0.5);
     }
 
     const unit_direction: vec3 = r.direction.unit_vector();

@@ -53,8 +53,8 @@ pub const vec3 = struct {
         return self.x * self.x + self.y * self.y + self.z * self.z;
     }
 
-    pub fn unit_vector(v: vec3) vec3 {
-        return v.scale(1.0 / v.length());
+    pub fn unit_vector(self: vec3) vec3 {
+        return self.scale(1.0 / self.length());
     }
 };
 
