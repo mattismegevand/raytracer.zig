@@ -4,7 +4,20 @@ const ray = @import("ray.zig").ray;
 const vec3 = @import("vec3.zig").vec3;
 const point3 = @import("vec3.zig").point3;
 
+fn hit_sphere(center: point3, radius: f64, r: ray) bool {
+    const oc: vec3 = center.sub(r.origin);
+    const a: f64 = r.direction.dot(r.direction);
+    const b: f64 = -2.0 * r.direction.dot(oc);
+    const c: f64 = oc.dot(oc) - radius * radius;
+    const discriminant: f64 = b * b - 4 * a * c;
+    return (discriminant >= 0);
+}
+
 fn ray_color(r: ray) color.color {
+    if (hit_sphere(point3.init(0, 0, -1), 0.5, r)) {
+        return color.color.init(1, 0, 0);
+    }
+
     const unit_direction: vec3 = r.direction.unit_vector();
     const a: f64 = 0.5 * (unit_direction.y + 1.0);
     return color.color.init(1.0, 1.0, 1.0).scale(1.0 - a).add(color.color.init(0.5, 0.7, 1.0).scale(a));
