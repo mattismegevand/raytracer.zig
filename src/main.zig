@@ -6,14 +6,14 @@ const point3 = @import("vec3.zig").point3;
 
 fn hit_sphere(center: point3, radius: f64, r: ray) f64 {
     const oc: vec3 = center.sub(r.origin);
-    const a: f64 = r.direction.dot(r.direction);
-    const b: f64 = -2.0 * r.direction.dot(oc);
-    const c: f64 = oc.dot(oc) - radius * radius;
-    const discriminant: f64 = b * b - 4 * a * c;
+    const a: f64 = r.direction.length_squared();
+    const h: f64 = r.direction.dot(oc);
+    const c: f64 = oc.length_squared() - radius * radius;
+    const discriminant: f64 = h * h - a * c;
     if (discriminant < 0) {
         return -1.0;
     } else {
-        return (-b - @sqrt(discriminant)) / (2.0 * a);
+        return (h - @sqrt(discriminant)) / a;
     }
 }
 
