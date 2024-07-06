@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-rm image.ppm
+rm image.png
 ffmpeg -i "image.ppm" "image.png"

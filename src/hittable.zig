@@ -4,12 +4,14 @@ const point3 = @import("vec3.zig").point3;
 const ray = @import("ray.zig").ray;
 const sphere = @import("sphere.zig").sphere;
 const interval = @import("interval.zig").interval;
+const material = @import("material.zig").material;
 
 pub const hit_record = struct {
     p: point3,
     normal: vec3,
     t: f64,
     front_face: bool,
+    mat: material,
 
     pub fn set_face_normal(self: *hit_record, r: ray, outward_normal: vec3) void {
         self.front_face = r.direction.dot(outward_normal) < 0;

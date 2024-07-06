@@ -54,6 +54,11 @@ pub const vec3 = struct {
         return self.x * self.x + self.y * self.y + self.z * self.z;
     }
 
+    pub fn near_zero(self: vec3) bool {
+        const s: f64 = 1e-8;
+        return (@abs(self.x) < s) and (@abs(self.y) < s) and (@abs(self.z) < s);
+    }
+
     pub fn unit_vector(self: vec3) vec3 {
         return self.scale(1.0 / self.length());
     }
@@ -86,6 +91,10 @@ pub const vec3 = struct {
         } else {
             return on_unit_sphere.neg();
         }
+    }
+
+    pub fn reflect(v: vec3, n: vec3) vec3 {
+        return v.sub(n.scale(2 * v.dot(n)));
     }
 };
 

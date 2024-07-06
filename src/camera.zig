@@ -9,6 +9,7 @@ const hittable_list = @import("hittable_list.zig").hittable_list;
 const sphere = @import("sphere.zig").sphere;
 const helper = @import("helper.zig");
 const interval = @import("interval.zig").interval;
+const material = @import("material.zig").material;
 
 pub const camera = struct {
     aspect_ratio: f64,
@@ -38,8 +39,8 @@ pub const camera = struct {
                 var pixel_color: color.color = color.color.zero();
                 var sample: u16 = 0;
                 while (sample < self.samples_per_pixel) : (sample += 1) {
-                    const r: ray = self.get_ray(i, j);
-                    pixel_color = pixel_color.add(self.ray_color(r, self.max_depth, world));
+                    var r: ray = self.get_ray(i, j);
+                    pixel_color = pixel_color.add(ray_color(&r, self.max_depth, world));
                 }
                 try color.write_color(stdout, pixel_color.scale(self.pixel_samples_scale));
             }
@@ -52,7 +53,7 @@ pub const camera = struct {
     pub fn init(self: *camera) !void {
         // self.aspect_ratio = 1.0;
         // self.image_width = 100;
-        self.samples_per_pixel = 100;
+        // self.samples_per_pixel = 10;
         // self.max_depth = 10;
 
         try helper.random_init();
@@ -92,15 +93,19 @@ pub const camera = struct {
         return vec3.init(helper.random_double() - 0.5, helper.random_double() - 0.5, 0);
     }
 
-    fn ray_color(self: *camera, r: ray, depth: u16, world: hittable_list) color.color {
+    fn ray_color(r: *ray, depth: u16, world: hittable_list) color.color {
         if (depth <= 0) {
             return color.color.zero();
         }
         var rec: hit_record = undefined;
 
-        if (world.hit(r, interval.init(0.001, helper.infinity), &rec)) {
-            const direction: vec3 = rec.normal.add(vec3.random_unit_vector());
-            return self.ray_color(ray.init(rec.p, direction), depth - 1, world).scale(0.5);
+        if (world.hit(r.*, interval.init(0.001, helper.infinity), &rec)) {
+            var scattered: ray = undefined;
+            var attenuation: color.color = undefined;
+            if (rec.mat.scatter(r, &rec, &attenuation, &scattered)) {
+                return attenuation.mul(ray_color(&scattered, depth - 1, world));
+            }
+            return color.color.zero();
         }
 
         const unit_direction: vec3 = r.direction.unit_vector();

@@ -4,13 +4,15 @@ const vec3 = @import("vec3.zig").vec3;
 const point3 = @import("vec3.zig").point3;
 const ray = @import("ray.zig").ray;
 const interval = @import("interval.zig").interval;
+const material = @import("material.zig").material;
 
 pub const sphere = struct {
     center: point3,
     radius: f64,
+    mat: material,
 
-    pub fn init(center: point3, radius: f64) sphere {
-        return sphere{ .center = center, .radius = radius };
+    pub fn init(center: point3, radius: f64, mat: material) sphere {
+        return sphere{ .center = center, .radius = radius, .mat = mat };
     }
 
     pub fn hit(self: sphere, r: ray, ray_t: interval, rec: *hit_record) bool {
@@ -38,6 +40,7 @@ pub const sphere = struct {
         rec.p = r.at(rec.t);
         const outward_normal: vec3 = rec.p.sub(self.center).scale(1.0 / self.radius);
         rec.set_face_normal(r, outward_normal);
+        rec.mat = self.mat;
 
         return true;
     }
