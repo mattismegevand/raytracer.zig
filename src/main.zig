@@ -3,25 +3,16 @@ const color = @import("color.zig");
 const ray = @import("ray.zig").ray;
 const vec3 = @import("vec3.zig").vec3;
 const point3 = @import("vec3.zig").point3;
+const hit_record = @import("hittable.zig").hit_record;
+const hittable = @import("hittable.zig").hittable;
+const hittable_list = @import("hittable_list.zig").hittable_list;
+const sphere = @import("sphere.zig").sphere;
+const helper = @import("helper.zig");
 
-fn hit_sphere(center: point3, radius: f64, r: ray) f64 {
-    const oc: vec3 = center.sub(r.origin);
-    const a: f64 = r.direction.length_squared();
-    const h: f64 = r.direction.dot(oc);
-    const c: f64 = oc.length_squared() - radius * radius;
-    const discriminant: f64 = h * h - a * c;
-    if (discriminant < 0) {
-        return -1.0;
-    } else {
-        return (h - @sqrt(discriminant)) / a;
-    }
-}
-
-fn ray_color(r: ray) color.color {
-    const t: f64 = hit_sphere(point3.init(0, 0, -1), 0.5, r);
-    if (t > 0.0) {
-        const N: vec3 = r.at(t).sub(vec3.init(0, 0, -1)).unit_vector();
-        return color.color.init(N.x + 1, N.y + 1, N.z + 1).scale(0.5);
+fn ray_color(r: ray, world: hittable_list) color.color {
+    var rec: hit_record = undefined;
+    if (world.hit(r, 0, helper.infinity, &rec)) {
+        return rec.normal.add(color.color.init(1, 1, 1)).scale(0.5);
     }
 
     const unit_direction: vec3 = r.direction.unit_vector();
@@ -35,6 +26,16 @@ pub fn main() !void {
 
     var image_height: u16 = @as(f64, @floatFromInt(image_width)) / aspect_ratio;
     image_height = if (image_height < 1) 1 else image_height;
+
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer _ = gpa.deinit();
+
+    var world = hittable_list{ .objects = std.ArrayList(hittable).init(allocator) };
+    defer world.objects.deinit();
+
+    try world.objects.append(hittable{ .sphere = sphere.init(point3.init(0, 0, -1), 0.5) });
+    try world.objects.append(hittable{ .sphere = sphere.init(point3.init(0, -100.5, -1), 100) });
 
     const focal_length: f64 = 1.0;
     const viewport_height: f64 = 2.0;
@@ -64,7 +65,7 @@ pub fn main() !void {
             const ray_direction: vec3 = pixel_center.sub(camera_center);
             const r: ray = ray.init(camera_center, ray_direction);
 
-            const pixel_color: color.color = ray_color(r);
+            const pixel_color: color.color = ray_color(r, world);
             try color.write_color(stdout, pixel_color);
         }
     }
