@@ -15,10 +15,10 @@ pub fn main() !void {
     var world = hittable_list{ .objects = std.ArrayList(hittable).init(allocator) };
     defer world.objects.deinit();
 
-    const material_ground: material.material = material.material{ .lambertian = material.lambertian{ .albedo = color.color.init(0.8, 0.8, 0.0) } };
-    const material_center: material.material = material.material{ .lambertian = material.lambertian{ .albedo = color.color.init(0.1, 0.2, 0.5) } };
-    const material_left: material.material = material.material{ .metal = material.metal{ .albedo = color.color.init(0.8, 0.8, 0.8) } };
-    const material_right: material.material = material.material{ .metal = material.metal{ .albedo = color.color.init(0.8, 0.6, 0.2) } };
+    const material_ground: material.material = material.material{ .lambertian = material.lambertian.init(color.color.init(0.8, 0.8, 0.0)) };
+    const material_center: material.material = material.material{ .lambertian = material.lambertian.init(color.color.init(0.1, 0.2, 0.5)) };
+    const material_left: material.material = material.material{ .metal = material.metal.init(color.color.init(0.8, 0.8, 0.8), 0.3) };
+    const material_right: material.material = material.material{ .metal = material.metal.init(color.color.init(0.8, 0.6, 0.2), 1.0) };
 
     try world.objects.append(hittable{ .sphere = sphere.init(point3.init(0.0, -100.5, -1.0), 100.0, material_ground) });
     try world.objects.append(hittable{ .sphere = sphere.init(point3.init(0.0, 0.0, -1.2), 0.5, material_center) });

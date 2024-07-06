@@ -23,6 +23,10 @@ pub const material = union(enum) {
 pub const lambertian = struct {
     albedo: color,
 
+    pub fn init(albedo: color) lambertian {
+        return lambertian{ .albedo = albedo };
+    }
+
     pub fn scatter(self: lambertian, _: *ray, rec: *hit_record, attenuation: *color, scattered: *ray) bool {
         var scatter_direction: vec3 = rec.normal.add(vec3.random_unit_vector());
 
@@ -38,11 +42,17 @@ pub const lambertian = struct {
 
 pub const metal = struct {
     albedo: color,
+    fuzz: f64,
+
+    pub fn init(albedo: color, fuzz: f64) metal {
+        return metal{ .albedo = albedo, .fuzz = if (fuzz < 1.0) fuzz else 1.0 };
+    }
 
     pub fn scatter(self: metal, r_in: *ray, rec: *hit_record, attenuation: *color, scattered: *ray) bool {
-        const reflected: vec3 = vec3.reflect(r_in.direction, rec.normal);
+        var reflected: vec3 = vec3.reflect(r_in.direction, rec.normal);
+        reflected = reflected.unit_vector().add(vec3.random_unit_vector().scale(self.fuzz));
         scattered.* = ray.init(rec.p, reflected);
         attenuation.* = self.albedo;
-        return true;
+        return (scattered.direction.dot(rec.normal) > 0.0);
     }
 };
