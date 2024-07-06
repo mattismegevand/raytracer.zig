@@ -8,10 +8,11 @@ const hittable = @import("hittable.zig").hittable;
 const hittable_list = @import("hittable_list.zig").hittable_list;
 const sphere = @import("sphere.zig").sphere;
 const helper = @import("helper.zig");
+const interval = @import("interval.zig").interval;
 
 fn ray_color(r: ray, world: hittable_list) color.color {
     var rec: hit_record = undefined;
-    if (world.hit(r, 0, helper.infinity, &rec)) {
+    if (world.hit(r, interval.init(0, helper.infinity), &rec)) {
         return rec.normal.add(color.color.init(1, 1, 1)).scale(0.5);
     }
 
