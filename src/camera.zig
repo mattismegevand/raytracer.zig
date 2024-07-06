@@ -100,7 +100,7 @@ pub const camera = struct {
         var rec: hit_record = undefined;
 
         if (world.hit(r, interval.init(0.001, helper.infinity), &rec)) {
-            const direction: vec3 = vec3.random_on_hemisphere(self.rand, rec.normal);
+            const direction: vec3 = rec.normal.add(vec3.random_unit_vector(self.rand));
             return self.ray_color(ray.init(rec.p, direction), depth - 1, world).scale(0.5);
         }
 
