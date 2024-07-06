@@ -17,12 +17,14 @@ pub fn main() !void {
 
     const material_ground: material.material = material.material{ .lambertian = material.lambertian.init(color.color.init(0.8, 0.8, 0.0)) };
     const material_center: material.material = material.material{ .lambertian = material.lambertian.init(color.color.init(0.1, 0.2, 0.5)) };
-    const material_left: material.material = material.material{ .metal = material.metal.init(color.color.init(0.8, 0.8, 0.8), 0.3) };
+    const material_left: material.material = material.material{ .dielectric = material.dielectric.init(1.50) };
+    const material_bubble: material.material = material.material{ .dielectric = material.dielectric.init(1.00 / 1.50) };
     const material_right: material.material = material.material{ .metal = material.metal.init(color.color.init(0.8, 0.6, 0.2), 1.0) };
 
     try world.objects.append(hittable{ .sphere = sphere.init(point3.init(0.0, -100.5, -1.0), 100.0, material_ground) });
     try world.objects.append(hittable{ .sphere = sphere.init(point3.init(0.0, 0.0, -1.2), 0.5, material_center) });
     try world.objects.append(hittable{ .sphere = sphere.init(point3.init(-1.0, 0.0, -1.0), 0.5, material_left) });
+    try world.objects.append(hittable{ .sphere = sphere.init(point3.init(-1.0, 0.0, -1.0), 0.4, material_bubble) });
     try world.objects.append(hittable{ .sphere = sphere.init(point3.init(1.0, 0.0, -1.0), 0.5, material_right) });
 
     var cam: camera = undefined;
