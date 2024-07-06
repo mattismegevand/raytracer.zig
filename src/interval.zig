@@ -29,6 +29,16 @@ pub const interval = struct {
         return self.min < x and x < self.max;
     }
 
+    pub fn clamp(self: interval, x: f64) f64 {
+        if (x < self.min) {
+            return self.min;
+        } else if (x > self.max) {
+            return self.max;
+        } else {
+            return x;
+        }
+    }
+
     const empty: interval = interval{ .min = helper.infinity, .max = -helper.infinity };
     const universe: interval = interval{ .min = -helper.infinity, .max = helper.infinity };
 };

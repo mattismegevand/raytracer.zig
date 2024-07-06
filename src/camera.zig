@@ -11,16 +11,19 @@ const helper = @import("helper.zig");
 const interval = @import("interval.zig").interval;
 
 pub const camera = struct {
-    aspect_ratio: f64 = 1.0,
-    image_width: u16 = 100,
+    aspect_ratio: f64,
+    image_width: u16,
     image_height: u16,
     center: point3,
     pixel00_loc: point3,
     pixel_delta_u: vec3,
     pixel_delta_v: vec3,
+    samples_per_pixel: u16,
+    pixel_samples_scale: f64,
+    rand: helper.random,
 
     pub fn render(self: *camera, world: hittable_list) !void {
-        self.init();
+        try self.init();
 
         const stdout_file = std.io.getStdOut().writer();
         var bw = std.io.bufferedWriter(stdout_file);
@@ -32,12 +35,13 @@ pub const camera = struct {
             var i: u16 = 0;
             std.debug.print("Scanlines remaining: {}\n", .{self.image_height - j});
             while (i < self.image_width) : (i += 1) {
-                const pixel_center: point3 = self.pixel00_loc.add(self.pixel_delta_u.scale(@as(f64, @floatFromInt(i))).add(self.pixel_delta_v.scale(@as(f64, @floatFromInt(j)))));
-                const ray_direction: vec3 = pixel_center.sub(self.center);
-                const r: ray = ray.init(self.center, ray_direction);
-
-                const pixel_color: color.color = ray_color(r, world);
-                try color.write_color(stdout, pixel_color);
+                var pixel_color: color.color = color.color.zero();
+                var sample: u16 = 0;
+                while (sample < self.samples_per_pixel) : (sample += 1) {
+                    const r: ray = self.get_ray(i, j);
+                    pixel_color = pixel_color.add(ray_color(r, world));
+                }
+                try color.write_color(stdout, pixel_color.scale(self.pixel_samples_scale));
             }
         }
         std.debug.print("Done.\n", .{});
@@ -45,9 +49,16 @@ pub const camera = struct {
         try bw.flush();
     }
 
-    pub fn init(self: *camera) void {
+    pub fn init(self: *camera) !void {
+        self.aspect_ratio = 1.0;
+        self.image_width = 100;
+        self.samples_per_pixel = 100;
+        try self.rand.init();
+
         self.image_height = @as(u16, @intFromFloat(@as(f64, @floatFromInt(self.image_width)) / self.aspect_ratio));
         self.image_height = if (self.image_height < 1) 1 else self.image_height;
+
+        self.pixel_samples_scale = 1.0 / @as(f64, @floatFromInt(self.samples_per_pixel));
 
         self.center = point3.zero();
 
@@ -63,6 +74,20 @@ pub const camera = struct {
 
         const viewport_upper_left = self.center.sub(vec3.init(0, 0, focal_length)).sub(viewport_u.scale(0.5)).sub(viewport_v.scale(0.5));
         self.pixel00_loc = viewport_upper_left.add(self.pixel_delta_u.add(self.pixel_delta_v).scale(0.5));
+    }
+
+    pub fn get_ray(self: camera, i: u16, j: u16) ray {
+        const offset: vec3 = self.sample_square();
+        const pixel_sample: point3 = self.pixel00_loc.add(self.pixel_delta_u.scale(@as(f64, @floatFromInt(i)) + offset.x)).add(self.pixel_delta_v.scale(@as(f64, @floatFromInt(j)) + offset.y));
+
+        const ray_origin: vec3 = self.center;
+        const ray_direction: vec3 = pixel_sample.sub(ray_origin);
+
+        return ray.init(ray_origin, ray_direction);
+    }
+
+    pub fn sample_square(self: camera) vec3 {
+        return vec3.init(self.rand.random_double() - 0.5, self.rand.random_double() - 0.5, 0);
     }
 
     fn ray_color(r: ray, world: hittable_list) color.color {
