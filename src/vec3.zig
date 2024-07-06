@@ -103,6 +103,15 @@ pub const vec3 = struct {
         const r_out_parallel: vec3 = n.scale(-@sqrt(@abs(1.0 - r_out_prep.length_squared())));
         return r_out_prep.add(r_out_parallel);
     }
+
+    pub fn random_in_unit_disk() vec3 {
+        while (true) {
+            const p: vec3 = vec3.init(helper.random_double_range(-1, 1), helper.random_double_range(-1, 1), 0);
+            if (p.length_squared() < 1) {
+                return p;
+            }
+        }
+    }
 };
 
 pub const point3 = vec3;
