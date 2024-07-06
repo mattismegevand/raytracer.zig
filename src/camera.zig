@@ -21,6 +21,7 @@ pub const camera = struct {
     samples_per_pixel: u16,
     pixel_samples_scale: f64,
     rand: helper.random,
+    max_depth: u16,
 
     pub fn render(self: *camera, world: hittable_list) !void {
         try self.init();
@@ -39,7 +40,7 @@ pub const camera = struct {
                 var sample: u16 = 0;
                 while (sample < self.samples_per_pixel) : (sample += 1) {
                     const r: ray = self.get_ray(i, j);
-                    pixel_color = pixel_color.add(self.ray_color(r, world));
+                    pixel_color = pixel_color.add(self.ray_color(r, self.max_depth, world));
                 }
                 try color.write_color(stdout, pixel_color.scale(self.pixel_samples_scale));
             }
@@ -53,6 +54,7 @@ pub const camera = struct {
         // self.aspect_ratio = 1.0;
         // self.image_width = 100;
         self.samples_per_pixel = 100;
+        // self.max_depth = 10;
 
         try self.rand.init();
 
@@ -91,12 +93,15 @@ pub const camera = struct {
         return vec3.init(self.rand.random_double() - 0.5, self.rand.random_double() - 0.5, 0);
     }
 
-    fn ray_color(self: *camera, r: ray, world: hittable_list) color.color {
+    fn ray_color(self: *camera, r: ray, depth: u16, world: hittable_list) color.color {
+        if (depth <= 0) {
+            return color.color.zero();
+        }
         var rec: hit_record = undefined;
 
-        if (world.hit(r, interval.init(0, helper.infinity), &rec)) {
+        if (world.hit(r, interval.init(0.001, helper.infinity), &rec)) {
             const direction: vec3 = vec3.random_on_hemisphere(self.rand, rec.normal);
-            return self.ray_color(ray.init(rec.p, direction), world).scale(0.5);
+            return self.ray_color(ray.init(rec.p, direction), depth - 1, world).scale(0.5);
         }
 
         const unit_direction: vec3 = r.direction.unit_vector();

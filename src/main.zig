@@ -19,6 +19,7 @@ pub fn main() !void {
     var cam: camera = undefined;
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 400;
+    cam.max_depth = 50;
 
     try cam.render(world);
 }
