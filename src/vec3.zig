@@ -58,29 +58,29 @@ pub const vec3 = struct {
         return self.scale(1.0 / self.length());
     }
 
-    pub fn random(rand: helper.random) vec3 {
-        return vec3{ .x = rand.random_double(), .y = rand.random_double(), .z = rand.random_double() };
+    pub fn random() vec3 {
+        return vec3{ .x = helper.random_double(), .y = helper.random_double(), .z = helper.random_double() };
     }
 
-    pub fn random_range(rand: helper.random, min: f64, max: f64) vec3 {
-        return vec3{ .x = rand.random_double_range(min, max), .y = rand.random_double_range(min, max), .z = rand.random_double_range(min, max) };
+    pub fn random_range(min: f64, max: f64) vec3 {
+        return vec3{ .x = helper.random_double_range(min, max), .y = helper.random_double_range(min, max), .z = helper.random_double_range(min, max) };
     }
 
-    pub fn random_in_unit_sphere(rand: helper.random) vec3 {
+    pub fn random_in_unit_sphere() vec3 {
         while (true) {
-            const p: vec3 = vec3.random_range(rand, -1, 1);
+            const p: vec3 = vec3.random_range(-1, 1);
             if (p.length_squared() < 1) {
                 return p;
             }
         }
     }
 
-    pub fn random_unit_vector(rand: helper.random) vec3 {
-        return random_in_unit_sphere(rand).unit_vector();
+    pub fn random_unit_vector() vec3 {
+        return random_in_unit_sphere().unit_vector();
     }
 
-    pub fn random_on_hemisphere(rand: helper.random, normal: vec3) vec3 {
-        const on_unit_sphere: vec3 = random_unit_vector(rand);
+    pub fn random_on_hemisphere(normal: vec3) vec3 {
+        const on_unit_sphere: vec3 = random_unit_vector();
         if (on_unit_sphere.dot(normal) > 0.0) {
             return on_unit_sphere;
         } else {

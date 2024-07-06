@@ -20,7 +20,6 @@ pub const camera = struct {
     pixel_delta_v: vec3,
     samples_per_pixel: u16,
     pixel_samples_scale: f64,
-    rand: helper.random,
     max_depth: u16,
 
     pub fn render(self: *camera, world: hittable_list) !void {
@@ -56,7 +55,7 @@ pub const camera = struct {
         self.samples_per_pixel = 100;
         // self.max_depth = 10;
 
-        try self.rand.init();
+        try helper.random_init();
 
         self.image_height = @as(u16, @intFromFloat(@as(f64, @floatFromInt(self.image_width)) / self.aspect_ratio));
         self.image_height = if (self.image_height < 1) 1 else self.image_height;
@@ -80,7 +79,7 @@ pub const camera = struct {
     }
 
     pub fn get_ray(self: camera, i: u16, j: u16) ray {
-        const offset: vec3 = self.sample_square();
+        const offset: vec3 = sample_square();
         const pixel_sample: point3 = self.pixel00_loc.add(self.pixel_delta_u.scale(@as(f64, @floatFromInt(i)) + offset.x)).add(self.pixel_delta_v.scale(@as(f64, @floatFromInt(j)) + offset.y));
 
         const ray_origin: vec3 = self.center;
@@ -89,8 +88,8 @@ pub const camera = struct {
         return ray.init(ray_origin, ray_direction);
     }
 
-    pub fn sample_square(self: camera) vec3 {
-        return vec3.init(self.rand.random_double() - 0.5, self.rand.random_double() - 0.5, 0);
+    pub fn sample_square() vec3 {
+        return vec3.init(helper.random_double() - 0.5, helper.random_double() - 0.5, 0);
     }
 
     fn ray_color(self: *camera, r: ray, depth: u16, world: hittable_list) color.color {
@@ -100,7 +99,7 @@ pub const camera = struct {
         var rec: hit_record = undefined;
 
         if (world.hit(r, interval.init(0.001, helper.infinity), &rec)) {
-            const direction: vec3 = rec.normal.add(vec3.random_unit_vector(self.rand));
+            const direction: vec3 = rec.normal.add(vec3.random_unit_vector());
             return self.ray_color(ray.init(rec.p, direction), depth - 1, world).scale(0.5);
         }
 
