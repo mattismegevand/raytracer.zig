@@ -1,15 +1,17 @@
 const std = @import("std");
 const vec3 = @import("vec3.zig");
+const Vec3 = vec3.Vec3;
+const Point3 = vec3.Point3;
 
-pub const ray = struct {
-    origin: vec3.point3,
-    direction: vec3.vec3,
+pub const Ray = struct {
+    origin: Point3,
+    direction: Vec3,
 
-    pub fn init(origin: vec3.point3, direction: vec3.vec3) ray {
-        return ray{ .origin = origin, .direction = direction };
+    pub fn init(origin: Point3, direction: Vec3) Ray {
+        return .{ .origin = origin, .direction = direction };
     }
 
-    pub fn at(self: ray, t: f64) vec3.vec3 {
+    pub fn at(self: Ray, t: f64) Vec3 {
         return self.origin.add(self.direction.scale(t));
     }
 };

@@ -1,21 +1,23 @@
 const std = @import("std");
-const vec3 = @import("vec3.zig").vec3;
-const point3 = @import("vec3.zig").point3;
-const ray = @import("ray.zig").ray;
-const hit_record = @import("hittable.zig").hit_record;
-const hittable = @import("hittable.zig").hittable;
-const interval = @import("interval.zig").interval;
+const vec3 = @import("vec3.zig");
+const Vec3 = vec3.Vec3;
+const Point3 = vec3.Point3;
+const Ray = @import("ray.zig").Ray;
+const hittable = @import("hittable.zig");
+const HitRecord = hittable.HitRecord;
+const Hittable = hittable.Hittable;
+const Interval = @import("interval.zig").Interval;
 
-pub const hittable_list = struct {
-    objects: std.ArrayList(hittable),
+pub const HittableList = struct {
+    objects: std.ArrayList(Hittable),
 
-    pub fn hit(self: hittable_list, r: ray, ray_t: interval, rec: *hit_record) bool {
-        var temp_rec: hit_record = undefined;
+    pub fn hit(self: HittableList, r: Ray, ray_t: Interval, rec: *HitRecord) bool {
+        var temp_rec: HitRecord = undefined;
         var hit_anything: bool = false;
-        var closest_so_far: f64 = ray_t.max;
+        var closest_so_far = ray_t.max;
 
         for (self.objects.items) |object| {
-            if (object.hit(r, interval.init(ray_t.min, closest_so_far), &temp_rec)) {
+            if (object.hit(r, Interval.init(ray_t.min, closest_so_far), &temp_rec)) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
                 rec.* = temp_rec;

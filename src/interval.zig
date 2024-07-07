@@ -1,35 +1,31 @@
 const std = @import("std");
 const helper = @import("helper.zig");
-const vec3 = @import("vec3.zig").vec3;
-const point3 = @import("vec3.zig").point3;
-const ray = @import("ray.zig").ray;
-const sphere = @import("sphere.zig").sphere;
 
-pub const interval = struct {
+pub const Interval = struct {
     min: f64,
     max: f64,
 
-    pub fn default() interval {
-        return interval{ .min = helper.infinity, .max = -helper.infinity };
+    pub fn default() Interval {
+        return .{ .min = helper.infinity, .max = -helper.infinity };
     }
 
-    pub fn init(min: f64, max: f64) interval {
-        return interval{ .min = min, .max = max };
+    pub fn init(min: f64, max: f64) Interval {
+        return .{ .min = min, .max = max };
     }
 
-    pub fn size(self: interval) f64 {
+    pub fn size(self: Interval) f64 {
         return self.max - self.min;
     }
 
-    pub fn contains(self: interval, x: f64) bool {
+    pub fn contains(self: Interval, x: f64) bool {
         return self.min <= x and x <= self.max;
     }
 
-    pub fn surrounds(self: interval, x: f64) bool {
+    pub fn surrounds(self: Interval, x: f64) bool {
         return self.min < x and x < self.max;
     }
 
-    pub fn clamp(self: interval, x: f64) f64 {
+    pub fn clamp(self: Interval, x: f64) f64 {
         if (x < self.min) {
             return self.min;
         } else if (x > self.max) {
@@ -39,6 +35,6 @@ pub const interval = struct {
         }
     }
 
-    const empty: interval = interval{ .min = helper.infinity, .max = -helper.infinity };
-    const universe: interval = interval{ .min = -helper.infinity, .max = helper.infinity };
+    const empty = init(helper.infinity, -helper.infinity);
+    const universe = init(-helper.infinity, helper.infinity);
 };

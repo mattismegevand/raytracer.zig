@@ -1,34 +1,35 @@
 const std = @import("std");
-const hit_record = @import("hittable.zig").hit_record;
-const vec3 = @import("vec3.zig").vec3;
-const point3 = @import("vec3.zig").point3;
-const ray = @import("ray.zig").ray;
-const interval = @import("interval.zig").interval;
-const material = @import("material.zig").material;
+const HitRecord = @import("hittable.zig").HitRecord;
+const vec3 = @import("vec3.zig");
+const Vec3 = vec3.Vec3;
+const Point3 = vec3.Point3;
+const Ray = @import("ray.zig").Ray;
+const Interval = @import("interval.zig").Interval;
+const Material = @import("material.zig").Material;
 
-pub const sphere = struct {
-    center: point3,
+pub const Sphere = struct {
+    center: Point3,
     radius: f64,
-    mat: material,
+    mat: Material,
 
-    pub fn init(center: point3, radius: f64, mat: material) sphere {
-        return sphere{ .center = center, .radius = radius, .mat = mat };
+    pub fn init(center: Point3, radius: f64, mat: Material) Sphere {
+        return .{ .center = center, .radius = radius, .mat = mat };
     }
 
-    pub fn hit(self: sphere, r: ray, ray_t: interval, rec: *hit_record) bool {
-        const oc: vec3 = self.center.sub(r.origin);
-        const a: f64 = r.direction.length_squared();
-        const h: f64 = r.direction.dot(oc);
-        const c: f64 = oc.length_squared() - self.radius * self.radius;
+    pub fn hit(self: Sphere, r: Ray, ray_t: Interval, rec: *HitRecord) bool {
+        const oc = self.center.sub(r.origin);
+        const a = r.direction.lengthSquared();
+        const h = r.direction.dot(oc);
+        const c = oc.lengthSquared() - self.radius * self.radius;
 
-        const discriminant: f64 = h * h - a * c;
+        const discriminant = h * h - a * c;
         if (discriminant < 0) {
             return false;
         }
 
-        const sqrtd: f64 = @sqrt(discriminant);
+        const sqrtd = @sqrt(discriminant);
 
-        var root: f64 = (h - sqrtd) / a;
+        var root = (h - sqrtd) / a;
         if (root <= ray_t.min or ray_t.max <= root) {
             root = (h + sqrtd) / a;
             if (root <= ray_t.min or ray_t.max <= root) {
@@ -38,8 +39,8 @@ pub const sphere = struct {
 
         rec.t = root;
         rec.p = r.at(rec.t);
-        const outward_normal: vec3 = rec.p.sub(self.center).scale(1.0 / self.radius);
-        rec.set_face_normal(r, outward_normal);
+        const outward_normal = rec.p.sub(self.center).scale(1.0 / self.radius);
+        rec.setFaceNormal(r, outward_normal);
         rec.mat = self.mat;
 
         return true;

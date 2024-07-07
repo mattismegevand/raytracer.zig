@@ -1,18 +1,16 @@
 const std = @import("std");
 
-pub const infinity: f64 = std.math.inf(f64);
-pub const pi: f64 = std.math.pi;
+pub const infinity = std.math.inf(f64);
+pub const pi = std.math.pi;
 
-pub fn degrees_to_radians(degrees: f64) f64 {
+pub fn degreesToRadians(degrees: f64) f64 {
     return degrees * pi / 180.0;
 }
-
-pub const helper = undefined;
 
 var prng: ?std.Random.Xoshiro256 = null;
 var rand: ?std.Random = null;
 
-pub fn random_init() !void {
+pub fn randomInit() !void {
     if (prng == null) {
         prng = std.Random.DefaultPrng.init(blk: {
             var seed: u64 = undefined;
@@ -23,10 +21,10 @@ pub fn random_init() !void {
     }
 }
 
-pub fn random_double() f64 {
+pub fn randomDouble() f64 {
     return rand.?.float(f64);
 }
 
-pub fn random_double_range(min: f64, max: f64) f64 {
-    return min + (max - min) * random_double();
+pub fn randomDoubleRange(min: f64, max: f64) f64 {
+    return min + (max - min) * randomDouble();
 }
