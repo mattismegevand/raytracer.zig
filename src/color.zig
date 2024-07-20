@@ -23,9 +23,9 @@ pub fn writeColor(out: anytype, pixel_color: Color) !void {
     b = linearToGamma(b);
 
     const intensity = Interval.init(0.000, 0.999);
-    const rbyte = @as(i16, @intFromFloat(256 * intensity.clamp(r)));
-    const gbyte = @as(i16, @intFromFloat(256 * intensity.clamp(g)));
-    const bbyte = @as(i16, @intFromFloat(256 * intensity.clamp(b)));
+    const rbyte: i16 = @intFromFloat(256 * intensity.clamp(r));
+    const gbyte: i16 = @intFromFloat(256 * intensity.clamp(g));
+    const bbyte: i16 = @intFromFloat(256 * intensity.clamp(b));
 
     try out.print("{} {} {}\n", .{ rbyte, gbyte, bbyte });
 }

@@ -17,7 +17,9 @@ const Material = @import("material.zig").Material;
 pub const Camera = struct {
     aspect_ratio: f64,
     image_width: u16,
+    image_widthf: f32,
     image_height: u16,
+    image_heightf: f32,
     center: Point3,
     pixel00_loc: Point3,
     pixel_delta_u: Vec3,
@@ -66,9 +68,11 @@ pub const Camera = struct {
 
     pub fn init(self: *Camera) !void {
         try helper.randomInit();
+        self.image_widthf = @floatFromInt(self.image_width);
 
-        self.image_height = @as(u16, @intFromFloat(@as(f64, @floatFromInt(self.image_width)) / self.aspect_ratio));
+        self.image_height = @intFromFloat(self.image_widthf / self.aspect_ratio);
         self.image_height = if (self.image_height < 1) 1 else self.image_height;
+        self.image_heightf = @floatFromInt(self.image_height);
 
         self.pixel_samples_scale = 1.0 / @as(f64, @floatFromInt(self.samples_per_pixel));
 
@@ -77,7 +81,7 @@ pub const Camera = struct {
         const theta = helper.degreesToRadians(self.vfov);
         const h = @tan(theta / 2);
         const viewport_height = 2 * h * self.focus_dist;
-        const viewport_width = viewport_height * (@as(f64, @floatFromInt(self.image_width)) / @as(f64, @floatFromInt(self.image_height)));
+        const viewport_width = viewport_height * (self.image_widthf / self.image_heightf);
 
         self.w = self.lookfrom.sub(self.lookat).unitVector();
         self.u = self.vup.cross(self.w).unitVector();
@@ -86,8 +90,8 @@ pub const Camera = struct {
         const viewport_u = self.u.scale(viewport_width);
         const viewport_v = self.v.neg().scale(viewport_height);
 
-        self.pixel_delta_u = viewport_u.scale(1.0 / @as(f64, @floatFromInt(self.image_width)));
-        self.pixel_delta_v = viewport_v.scale(1.0 / @as(f64, @floatFromInt(self.image_height)));
+        self.pixel_delta_u = viewport_u.scale(1.0 / self.image_widthf);
+        self.pixel_delta_v = viewport_v.scale(1.0 / self.image_heightf);
 
         const viewport_upper_left = self.center.sub(self.w.scale(self.focus_dist)).sub(viewport_u.scale(0.5)).sub(viewport_v.scale(0.5));
         self.pixel00_loc = viewport_upper_left.add(self.pixel_delta_u.add(self.pixel_delta_v).scale(0.5));
